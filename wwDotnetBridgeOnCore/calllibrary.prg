@@ -65,7 +65,7 @@ FOR lnX = 0 TO lnCount -1
 	*** Access collection item indirectly using extended syntax
 	*** that supports nested objects and array/collection [] brackets
 	LOCAL loCertificate as System.Security.Cryptography.X509Certificates.X509Certificate2	
-	loCertificate = loBridge.GetPropertyEx(loStore,"Certificates[" + TRANSFORM(lnX) + "]")
+	loCertificate = loBridge.GetProperty(loStore,"Certificates[" + TRANSFORM(lnX) + "]")
 			
 	IF !ISNULL(loCertificate)
 		? loCertificate.FriendlyName

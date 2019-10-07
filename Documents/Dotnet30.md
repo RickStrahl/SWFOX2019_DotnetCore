@@ -1,5 +1,9 @@
 # An overview of .NET Core and ASP.NET Core
 
+*prepared for:*  [Southwest Fox 2019](http://www.swfox.net/)  
+*October 4th, 2019*  
+
+[Session Materials](https://github.com/RickStrahl/SWFOX2019_DotnetCore)
 
 ## An Introduction to .NET Core
 The first version of .NET Core was officially released in June of 2016. It has been around for 3 years now and can no longer be considered a 'new' technology. Yet in a way it still feels like brand new technology with a lot of .NET developers not having made the jump to .NET Core.
@@ -1239,6 +1243,8 @@ That's a real bummer, but there might still be an effort to support that in the 
 ### wwDotnetBridge Works
 In the meantime, [you can use wwDotnetBridge](https://github.com/RickStrahl/wwDotnetBridge) to invoke .NET objects. wwDotnetBridge is a wrapper proxy wrapper into .NET that allows direct activation of .NET components without requiring COM registration. 
 
+This section assumes you have some familiarity with wwDotnetBridge - if you're brand new and not sure what it does, or why you may need it to call .NET Code please check out the [detailed wwDotnetBridge White Paper](https://west-wind.com/presentations/wwdotnetbridge/wwDotnetBridge.pdf).  
+
 I recently added support for the .NET Core hosting APIs and was surprised to see that passing .NET objects from .NET to FoxPro still works, using a new set of hosting APIs. One of these APIs has been recently implemented in wwDotnetBridge and it makes it possible to invoke .NET Core compiled components from Visual FoxPro after all.
 
 ### Accessing .NET Core APIs
@@ -1308,10 +1314,265 @@ All of this works just fine and pretty much the same way as before.
 ### Creating your own .NET Core Classes and Calling from FoxPro
 As mentioned if you want to create your own .NET Core classes and call them from FoxPro you now have no choice but to use wwDotnetBridge, as regular COM Interop for IDispatch interfaces required by FoxPro no longer works.
 
+Let's take a quick look at a simple example of a custom class created in .NET Core:
 
-```ps
-dotnet tool install WebConnectionWebServer -g
-WebConnectionWebServer.exe  --webroot C:\WebSites\MySite\web
+```csharp
+public class DotnetSamples 
+{
+    public string Name { get; set; }
+
+    public string HelloWorld(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            name = "Mr. Anonymous";
+
+        Name = name;
+
+        return $"Hello {name}. Time is: {DateTime.Now.ToString("HH:mm:ss")}";
+    }
+
+    public Person GetPerson()
+    {
+        return new Person
+        {
+            Name = "Rick Strahl",
+            Company = "West Wind",
+            Entered = DateTime.Now
+        };
+    }
+
+    public bool SetPerson(Person person)
+    {
+        if (person != null && !string.IsNullOrEmpty(person.Name))
+            return true;
+
+        return false;
+    }
+}
+
+public class Person
+{
+    public string Name { get; set; }
+    public string Company { get; set; }
+    public DateTime Entered { get; set; }
+}
 ```
 
-aSAS
+This is nothing new - the way you create C# code and components works the same in .NET Core.
+
+The only difference for a .NET Core project is that the project type is different. .NET Core uses a new project type called **SDK Projects** that are much more lightweight than the full framework `.csproj` files. 
+
+In fact, a project file can be as simple as:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+</Project>```
+
+which is what we use here. By default, .NET Core projects pull in all files that it knows about - in this case the CSharp source files. You can now build this project inside of .NET Core.
+
+This project can now be built with:
+
+```ps
+dotnet build -c Release
+```
+
+And you have a .NET Core DLL.
+
+#### Call it from Visual FoxPro with wwDotnetBridge
+Now to call it from FoxPro you can use wwDotnetBridge with its new .NET Core support:
+
+```foxpro
+do wwDotNetBridge
+LOCAL loBridge as wwDotNetBridge
+loBridge = CREATEOBJECT("wwDotnetCoreBridge")
+
+? loBridge.GetDotnetVersion()
+
+*** Load a .NET Core Assembly
+IF !loBridge.Loadassembly(".\NetCoreFromFoxPro.dll")
+   ? "Unable to load assembly: " + loBridge.cErrorMsg
+   RETURN
+ENDIF
+
+loNet = loBridge.CreateInstance("NetCoreFromFoxPro.DotnetSamples")
+
+? "*** Calling Hello World:"
+? loNet.HelloWorld("rick")
+?
+
+? "*** Returning a Person"
+loPerson = loNet.GetPerson()
+? loPerson
+? loPerson.Name
+? loPerson.Company
+? loPerson.Entered
+?
+
+? "*** Passing a Person"
+loPerson.Company = "East Wind Technologies"
+? loNet.SetPerson(loPerson)
+```
+
+The key bit here is:
+
+```foxpro
+loBridge = CREATEOBJECT("wwDotnetCoreBridge")
+```
+
+which is new - and which then loads up the .NET Core runtime. The rest of the code use .NET Core to load our custom assembly, and invoke methods and get properties.
+
+Other than the class name, the behavior of wwDotnetBridge on .NET Core is really no different than it is on full framework.
+
+The above is very straightforward mainly because all the types involved are very simple and other than loading the assembly we're simply using stock COM calls to access the .NET Core component.
+
+Here's another example that retrieves all the certificates installed in the local user store of the local machine.
+
+```foxpro
+
+*** Get all the local User Certificates
+loStore = loBridge.CreateInstance("System.Security.Cryptography.X509Certificates.X509Store")
+
+? loBridge.cErrorMsg
+
+*** Grab a static Enum value
+leReadOnly = loBridge.GetEnumvalue("System.Security.Cryptography.X509Certificates.OpenFlags.ReadOnly")
+
+*** Use the enum value
+loStore.Open(leReadOnly)   && 0 - if value is known
+
+*** Returns a .NET Collection of store items
+laCertificates = loStore.Certificates
+
+*** Collections don't work over regular COM Interop
+*** so use indirect access
+lnCount = loBridge.GetProperty(laCertificates,"Count")
+
+*** Loop through Certificates
+FOR lnX = 0 TO lnCount -1
+	*** Access collection item indirectly using extended syntax
+	*** that supports nested objects and array/collection [] brackets
+	LOCAL loCertificate as System.Security.Cryptography.X509Certificates.X509Certificate2	
+	loCertificate = loBridge.GetProperty(loStore,"Certificates[" + TRANSFORM(lnX) + "]")
+			
+	IF !ISNULL(loCertificate)
+		? loCertificate.FriendlyName
+		? loCertificate.SerialNumber
+		? loCertificate.GetName()
+		
+	ENDIF
+ENDFOR
+```
+
+This code needs to explicitly access properties using wwDotnetBridge's intrinsic functions because some of the types are not supported over Com. THere are value types and collections and generics that are not otherwise accessible, and for those `InvokeMethod()`, `GetProperty()` are used.
+
+The bottom line to all of this is that .NET Core's COM support is not favorable to FoxPro interaction due to the removal of IDispatch COM support, which may or may not be added back to .NET Core in the future. As of 3.0 it doesn't work.
+
+Even if it did work, wwDotnetBridge offers a much better way to access .NET components without having to register components and provides a host of features that are necessary for many common .NET interactions.
+
+
+## ASP.NET Core And FoxPro
+For ASP.NET Core and FoxPro the story isn't much better unfortunately. .NET Core is a highly multi-threaded environment that extensively uses async operations. 
+
+### FoxPro COM Objects don't mix with ASP.NET Core Easily
+Regular COM interaction with FoxPro in this environment is very difficult due to FoxPro's single threaded nature. FoxPro simulates multi-threading via STA (Single Threaded Apartment) Threading and unfortunately that is not supported for .NET Core server requests. ASP.NET Core fires all requests on MTA threads. Not only that - the Web Server also offloads IO tasks to async processing to improve throughput and in the process, even a single HTTP request may jump across multiple threads commonly. In short, the multi-threading in .NET Core does not work with the default COM model that FoxPro uses.
+
+### Web Connection MiddleWare Web Server
+However it is possible to run FoxPro COM objects and activate them from .NET, but the process requires that the FoxPro instances are managed in their own thread pool. The idea is to essentially create a new thread for a FoxPro COM server and leave the COM object parked **on the same thread** for the lifetime of the COM server. 
+
+By doing this the COM server can run in a multithreaded environment without being subjected to the MTA threading model, because effectively the FoxPro server is always running on the same thread that it was started on. Threads and state never need to be marshalled and so the server can run even in .NET Core's intensely multi-threaded environment. Each COM Server communicates with the .NET Core Middleware via strings that are passed between the main ASP.NET Core request processing pipeline and the Web Connection COM server handlers.
+
+Web Connection has been using a custom thread pool like this for a long time initially in an ISAPI handler, then in a .NET Http Handler, and now that code has also been ported to .NET Core. As a cool side note - about 90% of the code from the .NET Handler was able to port directly to .NET Core. The remainder was mainly plumbing that hooks up the middleware and routes the request data from the ASP.NET request into the COM servers. There are a number of differences in how the request object is handled, but a large chunk of the architecture including the thread pools could be reused **as is** which is pretty cool.
+
+Here's a snapshot of an early preview of Web Connection's .NET Core Middleware running on ASP.NET Core.
+
+![](Figure20-WebConnectionMiddlewareServer.png)
+
+This is the message board application running under load in COM mode with the .NET Core middleware which works without much of an issue.
+
+### The Web Connection Web Server
+So how does this work? This new environment is set up as a standalone self-hosted application. An EXE that you can run from the command line essentially.
+
+![](Figure21-WebConnectionServerCommandLine.png)
+
+All .NET Core applications are console applications and so the Web Connection server is built as an EXE console application that then hosts ASP.NET Core. As we've seen earlier .NET Core can host a Kestrel Web server and run it locally. What you're seeing in the screen shot above is the Kestrel Web Server running locally.
+
+The Web Connection Middleware is hooked up into this Web server by default as is a Live Reload middleware that enables live reloading of content optionally.
+
+There are two ways to run this Web Connection Web Server:
+
+* As in installed Dotnet Tool
+* As a Standalone Exe
+
+#### Dotnet Tool
+The .NET Core SDK which is used to build and manage applications also has very easy to use tool packaging story which allows you to publish your own tools.
+
+A tool is nothing more than a Console application, so my Web Connection Web server can actually be a .NET Tool.
+
+To install it:
+
+```ps
+dotnet tool install -g WebConnectionWebServer
+```
+
+Once installed you can run it globally from the Command line:
+
+```ps
+WebConnectionWebServer --webroot \webconnectionprojects\wwthreads\web --openbrowser true
+```
+
+This launches the Web Server and opens a browser to the Web site. I can now start my Web Connection application server locally and I'm up and running with a live Web server.
+
+For this to work I need to have [the .NET Core SDK](https://dotnet.microsoft.com/download) installed (v3.0 or later).
+
+#### Standalone EXE
+The other option is to use pre-compiled single file EXE that you can directly drop into your project folder. The EXE can be executed from the Command line just like the dotnet tool is, but by having an EXE you can also host the application as part of an IIS Web site.
+
+In essence a standalone EXE allows you to create a full self-contained Web site that **includes the Web Server in the distribution**.  You can use the server as  development server, or use it with IIS in  a production environment.
+
+It's pretty powerful because you can essentially configure your application in place with **everything** it needs and even if the hosting is changed form local execution to IIS hosting the behavior is exactly the same using relative paths.
+
+The downside to a local EXE is that the EXE is very large: It's around 50mb for a small application like this Web Server. However, for that 50mb you get everything you need including the .NET Runtime.
+
+There are other options to distribute the EXE without the embedded runtimes in which case you have to ensure that the appropriate .NET Core runtime is installed on the target machine.
+
+Either approach works and the result of the Web processing is identical.
+
+In Web Connection this is currently a prototype but I'm hoping to work this out and provide a fully self-contained environment in the future.
+
+Another advantage of using .NET Core in general is that it's also possible to host the Web Server on a non-Windows box. While FoxPro still has to run on Windows the Web Server - when running in file mode - can potentially run on another platform and send the message files to a file share that a Windows machine that's running the Web Connection FoxPro server can pick up. There are new opportunities here - and file based processing may actually be vastly more efficient on Linux due to fewer file and directory size limitations that plague Windows.
+
+All of this is exciting as it offers new opportunities. It doesn't hurt either that .NET Core feels a lot snappier in the core startup/shutdown cycles. 
+
+## Summary
+
+* .NET Core is a Modern Platform
+    * High Performance
+    * Cross Platform
+* .NET Core is Different, yet Similar
+    * Architecturally different from Full Framework 
+    * But uses same .NET base libraries you may already know
+    * ASP.NET Core has many changes, but same concepts
+    * Upgrading to .NET Core requires a bit of work 
+* .NET Core is Microsoft’s Future
+    * .NET Full Framework is done at version 4.8
+    * All new development goes into .NET Core
+    * 4.8 will be supported for a long time!!!
+* ASP.NET Core and FoxPro don’t mix
+    * No STA Threading Support
+    * Async code and MTA can’t marshal FoxPro objects
+    * Web Connection supports .NET Core via custom Threading
+* COM is supported in .NET 
+    * You can create FoxPro COM objects in .NET
+    * COM Interop for .NET object invocation is broken 
+    * But you can use wwDotnetBridge to access .NET Core Components
+
+
+### Resources
+* [Samples and Slides for this Paper](https://github.com/RickStrahl/SWFOX2019_DotnetCore)
+* [WebConnectionWebServer Dotnet Tool]()
+* [wwDotnetBridge](https://github.com/rickstral/wwdotnetbridge)
