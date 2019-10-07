@@ -1,0 +1,21 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning",
+      "System": "Warning",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Warning",
+      "Westwind.WebConnection": "Warning"
+    },
+    "UseSsl": "false",
+    "EnableLiveReload": true,
+    "OpenBrowser": true,
+    "ShowUrls": true,
+    "WebConnection": {
+      "HandledExtensions": ".wc,.wcs,.wwd",
+      "MessagingMechanism": "File",
+      "ServerCount": 2
+    }
+  },
+  "AllowedHosts": "*"
+}

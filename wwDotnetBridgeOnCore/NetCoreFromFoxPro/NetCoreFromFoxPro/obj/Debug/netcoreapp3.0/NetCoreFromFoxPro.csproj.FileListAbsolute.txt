@@ -1,0 +1,8 @@
+C:\wwapps\Conf\DotnetCore\wwDotnetBridgeOnCore\NetCoreFromFoxPro\NetCoreFromFoxPro\bin\Debug\netcoreapp3.0\NetCoreFromFoxPro.deps.json
+C:\wwapps\Conf\DotnetCore\wwDotnetBridgeOnCore\NetCoreFromFoxPro\NetCoreFromFoxPro\bin\Debug\netcoreapp3.0\NetCoreFromFoxPro.dll
+C:\wwapps\Conf\DotnetCore\wwDotnetBridgeOnCore\NetCoreFromFoxPro\NetCoreFromFoxPro\bin\Debug\netcoreapp3.0\NetCoreFromFoxPro.pdb
+C:\wwapps\Conf\DotnetCore\wwDotnetBridgeOnCore\NetCoreFromFoxPro\NetCoreFromFoxPro\obj\Debug\netcoreapp3.0\NetCoreFromFoxPro.csprojAssemblyReference.cache
+C:\wwapps\Conf\DotnetCore\wwDotnetBridgeOnCore\NetCoreFromFoxPro\NetCoreFromFoxPro\obj\Debug\netcoreapp3.0\NetCoreFromFoxPro.AssemblyInfoInputs.cache
+C:\wwapps\Conf\DotnetCore\wwDotnetBridgeOnCore\NetCoreFromFoxPro\NetCoreFromFoxPro\obj\Debug\netcoreapp3.0\NetCoreFromFoxPro.AssemblyInfo.cs
+C:\wwapps\Conf\DotnetCore\wwDotnetBridgeOnCore\NetCoreFromFoxPro\NetCoreFromFoxPro\obj\Debug\netcoreapp3.0\NetCoreFromFoxPro.dll
+C:\wwapps\Conf\DotnetCore\wwDotnetBridgeOnCore\NetCoreFromFoxPro\NetCoreFromFoxPro\obj\Debug\netcoreapp3.0\NetCoreFromFoxPro.pdb
