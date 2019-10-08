@@ -12,8 +12,11 @@ Debug
 *.FXP
 *.opensdf
 *.bak
+storage.ide
 *.ide-*
 *.cache
+~*.*
+
 
 # mstest test results
 TestResults

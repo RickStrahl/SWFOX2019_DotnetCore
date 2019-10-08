@@ -1229,6 +1229,61 @@ All of this in a tiny single file application. This really highlights the overal
 As we move forward we'll look at more realistic and more complex scenarios, but just keep in mind that the underlying platform has a relatively simple base on top of which the more complex frameworks and features that we'll look at next are built.
 
 
+## Desktop Applications
+.NET Core 3.0 now also supports Windows desktop applications. Previously .NET Core only supported building server or console applications. You can now build WinForms and WPF applications with .NET Core although to be clear - **only on Windows**. To accomplish this Microsoft has created a number of support libraries that provide most of the .NET Windows platform features that previously were missing in .NET Core. They were of course missing because .NET Core is a cross platform environment that can run on Linux as well as Windows, and originally all the Windows specific features were stripped from the .NET Core CoreFx libraries.
+
+In .NET Core the Windows specific features have been moved into a separate set of libraries that can be referenced as part of a Windows desktop project. By specifying a desktop project type those Windows libraries are automatically pulled into the project.
+
+With a project setup like this:
+
+```xml
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <!--<TargetFramework>net462</TargetFramework>-->
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Version>1.19.9</Version>
+    <AssemblyName>MarkdownMonster</AssemblyName>
+</Project>
+```
+
+you get all the dependencies  you need to build a WPF application including the Windows references.
+
+![](ProjectReferences.png)
+
+Taking an existing WPF or WinForms project to .NET Core tends to result in a bit of work fixing up small differences in base APIs and bracketing out a few bits of code that might not work or work differently on .NET Core 3.0.
+
+### Deployment choices for .NET Core
+The output generated from a .NET Core project is not small and you have several deployment choices:
+
+* Use a Shared Runtime
+* Use self contained Runtime 
+* Create a single EXE
+
+A shared runtime is similar to the way .NET Framework works. Rather than ship all your files that are part of the runtime with your application you instead use a shared installed runtime that has to be pre-installed before you can run your application.
+
+Runtimes are forward compatbile, meaning as new minor versions come out your application can take advantage of it. If you have an app build for 3.0 it will run on 3.1. However it will not run on 4.0. Versioning in .NET Core is more restrictive than .NET Framework was.
+
+A self contained runtime application includes all the .NET Runtime files that are used by your application in a related folder. This makes for a fully self contained application with a fairly large footprint of support files.
+
+A variation on the self-contained runtime folder, is a self-contained EXE that basically takes all the related dependencies of your project and stuff it into a single, self-contained and very large EXE file.
+
+For Markdown Monster this self-contained EXE file is roughly 85mb in size, while the original distributed application (with a .NET Framework dependency) ships in about 16mb packed.
+
+It's large but you have basically a guaranteed runtime that will just run without any pre-installation prerequisites.
+
+### .NET Core For Desktop - is it worth it?
+In my opinion it's a bit early to build desktop applications for .NET Core. Not because it doesn't work - it does, but mainly because I think currently you're much better off shipping for full .NET framework without having to worry about which runtime is installed or shipping a monstrously large runtime distribution for your application.
+
+It's nice to be able to do that however, especially for corporate environments where many applications have to exist side by side and framework version dependencies can cause versioning conflicts for applications. Using self-contained installs ensures you get exactly the runtime you specify.
+
+The big benefits of .NET Core are likely to be realized later once there will be more of a delta of features between what .NET Framework provides and what .NET Core will evolve into with future changes. Since .NET Framework is done at version 4.8, .NET Core will be the way forward and the only way to do that in desktop apps is to use these new frameworks.
+
+
+
 ## FoxPro and .NET Core
 So what does all this mean for FoxPro? Obviously things have changed quite a bit in how .NET is activated and executed and so interop between FoxPro and .NET also has changed. The bad news is that it's more complicated, the good news is that it still works.
 
@@ -1525,26 +1580,79 @@ Once installed you can run it globally from the Command line:
 WebConnectionWebServer --webroot \webconnectionprojects\wwthreads\web --openbrowser true
 ```
 
-This launches the Web Server and opens a browser to the Web site. I can now start my Web Connection application server locally and I'm up and running with a live Web server.
+This launches the Web Server and opens a browser to the Web site. I can now start my Web Connection application server locally and I'm up and running with a live Web server, without an explicit Web Server install (save this self-contained one). That's a low barrier of entry!
 
 For this to work I need to have [the .NET Core SDK](https://dotnet.microsoft.com/download) installed (v3.0 or later).
 
 #### Standalone EXE
-The other option is to use pre-compiled single file EXE that you can directly drop into your project folder. The EXE can be executed from the Command line just like the dotnet tool is, but by having an EXE you can also host the application as part of an IIS Web site.
+It can also be done without having .NET Core installed at all by using a self-contained executable. Remember I mentioned this eaerlier for desktop applications that there's support for building self contained executables that packages everything needed into a single EXE file. It's large, but it is 100% self-contained and can run without any other .NET dependencies.
 
-In essence a standalone EXE allows you to create a full self-contained Web site that **includes the Web Server in the distribution**.  You can use the server as  development server, or use it with IIS in  a production environment.
+To build a self contained EXE is also very easy. In the project's folder (in my case `WebConnectionWebServer`)
+
+```cs
+dotnet publish  -c Release /p:PublishSingleFile=true /p:PublishTrimmed=true -r win-x64
+```
+
+This produces a single 50mb, self-contained executable.
+
+![](PublishedOutput.png)
+
+
+I can now run:
+
+```ps
+.\WebConnectionWebServer.exe --webroot \webconnectionprojects\wwthreads\web --openbrowser true
+```
+
+in the same way as I did with the .NET tool, but without having to install anything or having a dependency on .NET Core 3.0. Sweet.
+
+##### Running on IIS
+By having an EXE you can also host the application as part of an IIS Web site. If you open the `web.config` you'll find:
+
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <location path="." inheritInChildApplications="false">
+    <system.webServer>
+      <handlers>
+        <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModuleV2" resourceType="Unspecified" />
+      </handlers>
+      <aspNetCore processPath=".\WebConnectionWebServer.exe" arguments="" stdoutLogEnabled="true" stdoutLogFile=".\logs\stdout" hostingModel="inprocess">
+        <environmentVariables>
+          <environmentVariable name="ASPNETCORE_ENVIRONMENT" value="Production" />
+          <environmentVariable name="WEBCONNECTION_WEBROOT" value="c:\webconnectionprojects\wwthreads\web" />
+        </environmentVariables>
+      </aspNetCore>
+    </system.webServer>
+  </location>
+</configuration>
+```
+
+This allows you to use IIS and run the Web Connection .NET Core Middle inside of IIS's hosting which defers to a .NET Core module. 
+
+Why a separate Web Server? Kestrel is perfectly capable Web Server, it's not meant as a front facing full-featured Web Server. Instead Kestrel is meant to sit behind a Web Proxy that can serve, cache, compress and otherwise manage static resources, with Kestrel handling only the dynamic requests. IIS forwards only relevant requests to the .NET Core application and your FoxPro code. IIS is the fastest way on Windows - due to Kernel Caching and native built in compression - to serve static Web content. On other platforms server proxies like nginX or HaProxy serve the same functionality.
+
+##### Exe Benefits
+The EXE server is a standalone application that allows you to create a full self-contained Web site that **includes the Web Server in the distribution**.  You can use the server as  development server, or use it with IIS in  a production environment and you can ship the Web Server with your application! This means it's easy to test locally, easy to deploy and lets you configure the server in both places consistently using the same relative paths and configuration settings.
 
 It's pretty powerful because you can essentially configure your application in place with **everything** it needs and even if the hosting is changed form local execution to IIS hosting the behavior is exactly the same using relative paths.
 
 The downside to a local EXE is that the EXE is very large: It's around 50mb for a small application like this Web Server. However, for that 50mb you get everything you need including the .NET Runtime.
 
-There are other options to distribute the EXE without the embedded runtimes in which case you have to ensure that the appropriate .NET Core runtime is installed on the target machine.
+There are other options to distribute the EXE **without the embedded runtimes** which drops the EXE size down to a few 100kbs instead, but then of course you still need to ensure that .NET Core 3 (or whatever version) is installed. Trade offs.
 
 Either approach works and the result of the Web processing is identical.
 
-In Web Connection this is currently a prototype but I'm hoping to work this out and provide a fully self-contained environment in the future.
-
+##### Non-Windows Web Server Hosting
 Another advantage of using .NET Core in general is that it's also possible to host the Web Server on a non-Windows box. While FoxPro still has to run on Windows the Web Server - when running in file mode - can potentially run on another platform and send the message files to a file share that a Windows machine that's running the Web Connection FoxPro server can pick up. There are new opportunities here - and file based processing may actually be vastly more efficient on Linux due to fewer file and directory size limitations that plague Windows.
+
+This isn't a high priority item for this scenario, because Web Connection still relies on a Windows FoxPro instance to actually process requests. But the ability to have the Web related processing on a Linux box, and the FoxPro related processing on a WIndows box that only share a common folder for message files is a scenario that has come up on a number of occasions in the past. And with this it's now possible.
+
+
+##### Current State in Web Connection: Prototype
+In Web Connection this is currently a prototype but I'm hoping to work this out and provide a fully self-contained environment in the future that is integrated with the Web Connection Management Console.
+
 
 All of this is exciting as it offers new opportunities. It doesn't hurt either that .NET Core feels a lot snappier in the core startup/shutdown cycles. 
 

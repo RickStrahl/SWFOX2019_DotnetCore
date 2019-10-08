@@ -1,0 +1,117 @@
+﻿@using Microsoft.Extensions.Hosting
+@model  CoreOfDotnetCore.ErrorModel
+@inject  IHostEnvironment env
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Oops - An Error occurred in the Application</h1>
+
+<hr />
+
+<div style="margin: 30px 10px">
+    @Model.Message
+</div>
+
+<p>
+    The error has been logged and the authorities have been notified.
+</p>
+
+
+@if (env.IsDevelopment())
+{
+    <label>Stack Trace:</label>
+
+    <pre>@Model.Exception.StackTrace</pre>
+}
+
+<p>
+    <a href="~/">Back to Safety</a>
+</p>
+
+<hr />
+
+Your Application Team
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+@*<!DOCTYPE html>
+<html>
+<body>
+<h1>Hello World, @ViewBag.Name</h1>
+
+<hr />
+
+<div style="margin: 30px 10px">
+    @ViewBag.Message
+</div>
+
+<hr />
+<small>
+    created on: 
+    @DateTime.Now.ToString("HH:mm:ss")
+</small>
+</body>
+</html>*@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

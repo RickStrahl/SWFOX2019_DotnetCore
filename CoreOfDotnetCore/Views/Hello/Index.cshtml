@@ -1,0 +1,111 @@
+﻿@model  CoreOfDotnetCore.HelloWorldModel
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Hello World, @Model.Name</h1>
+
+<hr />
+
+<div style="margin: 30px 10px">
+    @Model.Message
+</div>
+
+
+@foreach (var c in Model.Message)
+{
+    <span style="padding: 2px;">
+        @if (c >= 'A' && c <= 'Z')
+        { <b>@c</b> }
+        else
+        { <span>@c</span> }
+    </span>
+}
+
+<hr />
+<small>
+    created on: 
+    @Model.TimeString
+</small>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+@*<!DOCTYPE html>
+<html>
+<body>
+<h1>Hello World, @ViewBag.Name</h1>
+
+<hr />
+
+<div style="margin: 30px 10px">
+    @ViewBag.Message
+</div>
+
+<hr />
+<small>
+    created on: 
+    @DateTime.Now.ToString("HH:mm:ss")
+</small>
+</body>
+</html>*@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
