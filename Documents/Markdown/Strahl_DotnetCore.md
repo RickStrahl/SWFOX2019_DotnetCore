@@ -21,6 +21,8 @@ At its core .NET Core is a complete re-imagining of .NET. It's designed from the
 * Side by Side Deployment
 * Familiar .NET platform for .NET Framework developers
 
+This is I can hardly live without. You can type on the current word and if I like what I see I won't tell you that there's a problem.
+
 Microsoft nailed the first three bullets with the first versions .NET Core 1.x, but tooling and meeting .NET feature expectations for the majority of .NET developers took quite a bit longer until version 2.x and now 3.x. .NET Core has steadily improved and now that it has arrived at v3.0 - typical for Microsoft standards - it has matured into a powerful, stable and consistent development framework that boosts some of the best performance for a generic toolset in the industry.
 
 ### Performance 
@@ -30,7 +32,7 @@ Unlike full framework which was Windows specific and tied very closely to Micros
 
 As a result .NET Core has been successfully designed to become a highly optimizable server platform and is now **one of the fastest general purpose Web frameworks** according to a number of benchmarks that measure server application performance (see [TechEmpower Benchmarks](https://www.techempower.com/benchmarks/)) placing in the top ten of many benchmarks for all types of Web servers. Note when looking at those benchmarks you need compare to comparable tools and platforms like NodeJs/Express, PHP and Java for an apples to apples comparison.
 
-These performance gains come from the small, modular nature of .NET Core, but also because Microsoft has spent an inordinate amount of time optimizing .NET Core's server components to make sure they are optimized for high performance and low memory scenarios. Unlike with Classic .NET, Microsoft is actively persuing max performance for ASP.NET Core and with the help of community supported contributions, this has been an amazing effort to watch.
+These performance gains come from the small, modular nature of .NET Core, but also because Microsoft has spent an inordinate amount of time optimizing .NET Core's server components to make sure they are optimized for high performance and low memory scenarios. Unlike with Classic .NET, Microsoft is actively pursuing max performance for ASP.NET Core and with the help of community supported contributions, this has been an amazing effort to watch.
 
 
 There's a lot of effort in recent versions of .NET Core to provide framework and language features like `Span<T>`, `Memory<T>` and friends that reduce memory usage and improve overall throughput at all levels of the framework. This results in much faster server code, but as of .NET 3.0 these changes are also slowly rippling through the rest of the .NET Core base libraries and are starting to impact all aspects of the entire .NET Core stack. As a developer this means you get a much improved performance without having to make code changes which is always a big winner!
@@ -131,11 +133,11 @@ With the release of .NET Core 2.0 Microsoft fixed a lot of these problems with m
 * Providing 'Framework' packages that removed much of NuGet Hell
 * Fixing the tooling problems
 
+
 All of these combined provided a good jumping in point for developers that previously were turned off by .NET Core's pseudo-.NET compatibility and the especially the NuGet hell issues. 
 
 #### API Surface
 The biggest feature of .NET Core 2.0 was that the **drastically improved API feature footprint** that more than doubled the number of APIs that are available over .NET Core 1.1. Microsoft brought back many of the well-known Full Framework, but non-platform specific .NET Framework APIs that makes it drastically easier to port Full Framework libraries to .NET Core. 
-
 This change had a huge impact on the eco-system as it made it much easier for library authors to port their packages to .NET Standard or .NET Core and that brought back much of richness of support libraries for .NET Core that was sorely missing in .NET Core 1.x.
 
 Today you can find most of the common components you expect with support for .NET Standard or .NET Core. 
@@ -163,7 +165,7 @@ But that may change. .NET Core 3.0 and the [.NET 5.0 initiative](https://devblog
 ### .NET Core 3.0
 .NET Core 3.0 was recently released and it's an iterative update on .NET Core 2.2. The biggest improvements in .NET Core 3.0 are big performance gains throughout the framework, which is is a result of the new core Runtime performance features getting applied to the CoreFx runtime. In .NET Core 2.1 and 2.2 Microsoft first applied these new features to ASP.NET Core framework where huge performance gains were achieved propelling .NET Core to the top of various public performance benchmarks. In other words, .NET Core 3.0 receives performance gains throughout much of the entire platform from string operations to collection performance and so on.
 
-.NET Core 3.0 also introduces a new service hosting model that is not tied to ASP.NET Core MVC that allows for alternate frameworks like gRpc to be hosted in a similar way as ASP.NET Core MVC applications. This allows .NET Core to be more flexible as new technologies come along that can be attached to the .NET Core base runtime.
+.NET Core 3.0 also introduces a new service hosting model that is not tied to ASP.NET Core MVC that allows for alternate frameworks like gRPC to be hosted in a similar way as ASP.NET Core MVC applications. This allows .NET Core to be more flexible as new technologies come along that can be attached to the .NET Core base runtime.
 
 Another feature of .NET Core 3.0 also provides support for Windows Desktop applications and specifically for building WPF and WinForms on top of .NET Core. This won't change that these applications are Windows only, but it does allow taking advantage of new .NET Core and C# features going forward that will only be available to .NET Core applications. While moving an existing .NET Framework application to .NET Core takes some effort, most of the work is setting up the new project and making sure all dependencies get included. The vast majority of Windows functionality and all of the WPF and Windows Forms features are available. For more info on what's involved check out this[ blog post on .NET Core 3.0 migration](https://weblog.west-wind.com/posts/2019/Apr/24/First-Steps-in-porting-Markdown-Monster-to-NET-Core-30). 
 
@@ -220,14 +222,14 @@ On the bottom of the ASP.NET specific stack is the core ASP.NET Core framework t
 
 The middleware pipeline handles the basic request handling and routing functionality, but the real work is done via the middleware components that plug into this core pipeline. Anything that you do to write application logic in ASP.NET Core is implemented through middleware. Frameworks like ASP.NET Core MVC, SignalR, gRPC, a third party stack like ServiceStack and anything you choose to build on your own is built using middleware at its base. Figure 3 shows how the stack hangs together.
 
-that includes a core base framework that manages the base request flow via middleware pipeline, and then several support libraries that run ontop of this base framework. ASP.NET Core MVC, ASP.NET Core SignalR, ASP.NET gRPC are all examples of frameworks that sit on top of the core ASP.NET middleware pipeline.
+that includes a core base framework that manages the base request flow via middleware pipeline, and then several support libraries that run on top of this base framework. ASP.NET Core MVC, ASP.NET Core SignalR, ASP.NET gRPC are all examples of frameworks that sit on top of the core ASP.NET middleware pipeline.
 
 ![](Figure3-AspNetCoreStack.png)
 
 <small>**Figure 3** - ASP.NET Core sits on top of the .NET Core framework and exposes a number of high level frameworks</small>
 
-### The Middleware Pipepline
-At the component and application level the middleware pipeline is really what drives **everything** in ASP.NET Core. Just about all useful functionality that you use in ASP.NET Core is implemented via middleware. From raw endpoint handlers that just **do one thing** for things like a Microservice or very simple endpoint handler, to middleware filters that you can implement to intercept requests and add your own content to the request and repsonse - it's all done through middleware. Middleware is the basic building block of extension in ASP.NET Core.
+### The Middleware Pipeline
+At the component and application level the middleware pipeline is really what drives **everything** in ASP.NET Core. Just about all useful functionality that you use in ASP.NET Core is implemented via middleware. From raw endpoint handlers that just **do one thing** for things like a Micro Service or very simple endpoint handler, to middleware filters that you can implement to intercept requests and add your own content to the request and response - it's all done through middleware. Middleware is the basic building block of extension in ASP.NET Core.
 
 While it's very easy to create a fully self contained ASP.NET Core application that is self hosted in a single program file by using a terminating endpoint middleware (using `app.Run()`) what you can build with a single middleware handler can be an entire framework. In **Figure 3** all the frameworks listed at the very top are implemented as middleware components. Some of these create many more sub-components for the middleware pipeline but nevertheless it all flows through middleware as the basic entry point.
 
@@ -244,7 +246,7 @@ Because of this two-way interaction middleware is very powerful as it can look a
 Typically a full framework like ASP.NET Core MVC sits at the end of the middleware pipeline as a terminating middleware that generates the final output for a request. But... requests aren't done at the end of the chain, as the chain reverses and moves backwards through all the same middleware components in reverse. Previous bits of middleware can potentially add additional functionality to the output going response. An example, might be a response filter that adds Gzip compression, or a Live Reload component that adds some additional script to an HTML page to execute when the page renders.
 
 ### ASP.NET Core MVC
-When you hear about ASP.NET Core, most of the time the discussion centers on higher level frameworks, rather than the middleware plumbing. The vast marjority of Web applications build with .NET Core are ASP.NET Core MVC applications.
+When you hear about ASP.NET Core, most of the time the discussion centers on higher level frameworks, rather than the middleware plumbing. The vast majority of Web applications build with .NET Core are ASP.NET Core MVC applications.
   
 MVC is a Model View Controller framework that actually plays host to a couple of different not MVC technologies:
 
@@ -255,7 +257,7 @@ While these two sub-frameworks appear to be very different in how they work and 
 
 MVC returns data as HTML using a ViewEngine to turn result model data into an HTML result by using the Razor Scripting language that lets you execute .NET Code inside of an HTML template. The template is passed a model of data that contains the content, and the template's logic then renders the model data into HTML. Views typically have very little code and mainly display data that was generated by the Controller or a business object. The View main writes out simple data values, handles iteration over lists and collections, and provides for conditional rendering and formatting of data using limited amounts of code.  While it's recommended to use very little code in a view, Razor is actually very powerful and supports most of the .NET language features. In other words, it's possible to abuse Razor scripting and write lots of logic in script code, but it's definitely not recommended.
 
-Web API provides the abililty to create service or API endpoints from the same controller infrastructure used in MVC. The difference for an API is that you **return data** rather than HTML. API endpoints can either return raw data objects which are serialized into JSON (or XML which are the default supported output formats), or can output specific `ActionResult` results just like View pages do.  The latter allows for more flexibility with results as you can different types of result types. For example, you may have structured object result for an operation or a very specific error response in case of an error. Using `ActionResult` returns as opposed to returning a `CustomResponse` gives you more control over the response.
+Web API provides the ability to create service or API endpoints from the same controller infrastructure used in MVC. The difference for an API is that you **return data** rather than HTML. API endpoints can either return raw data objects which are serialized into JSON (or XML which are the default supported output formats), or can output specific `ActionResult` results just like View pages do.  The latter allows for more flexibility with results as you can different types of result types. For example, you may have structured object result for an operation or a very specific error response in case of an error. Using `ActionResult` returns as opposed to returning a `CustomResponse` gives you more control over the response.
 
 MVC and Web API seem very different but other than the final output type, the rest of the pipeline used for both is identical. Routing, request filtering, method interception and just about everything else these two sub-frameworks use are identical. In previous versions of .NET these frameworks were separate and it caused all sorts of consternation as developers had to build the same support infrastructure for two separate and different frameworks. So in ASP.NET Core Microsoft decided to roll them both into the same framework, which was a good call.
 
@@ -264,7 +266,7 @@ As a result you now use a single set of filters and attributes that apply to bot
 ### Razor Pages
 Razor Pages is a relatively new feature of ASP.NET Core that was added with ASP.NET Core 2.x. Razor pages is a script centric MVC framework that relies on a single file, self-contained approach for Controller/View handling. Full MVC is very clear about the separation of Controller and View going so far as to completely moving the View and Controller into separate folders.
 
-RazorPages takes a different approach with Views that include code behind events that provide the Controller functionality. Script pages have request events like `OnGet()` and `OnPost()` that allow to handle specific operations against a razor page view. Code in Razor Pages can either be placed directly in the page in `@function()` block, or can be separated out into a separate class that sits side by side with the Razor Page templates. The functionality of Razor Pages is not very different than MVC as you still have controller like code that executes and passes its model data to the view. But the semantics of how the code and template are stored close to each other is very different. For the most part it's a matter of preference which approach you prefer.
+Razor Pages takes a different approach with Views that include code behind events that provide the Controller functionality. Script pages have request events like `OnGet()` and `OnPost()` that allow to handle specific operations against a razor page view. Code in Razor Pages can either be placed directly in the page in `@function()` block, or can be separated out into a separate class that sits side by side with the Razor Page templates. The functionality of Razor Pages is not very different than MVC as you still have controller like code that executes and passes its model data to the view. But the semantics of how the code and template are stored close to each other is very different. For the most part it's a matter of preference which approach you prefer.
 
 ## Summing Up
 So this concludes this very high level look at the .NET Core and ASP.NET Core Eco system. There's a lot to .NET Core and even more to ASP.NET Core and we'll explore much of that in this training.
@@ -276,7 +278,7 @@ Our goal in this training is to give you a good overview of the key technologies
 
 
 ## Getting Started with the Core of .NET Core
-Time to get our feet wet! In this section I'll take you through creating an ASP.NET Core application from scratch - literally. I'll use the basic command line tooling and a text editor (Visual Studio Code) rather than the full blown Visual Studio. I'm not doing this because I love the command line or I think we should only use low level tools. It's because for understanding the underpinnings of .NET Core it can be really helpful to see how the tooling works and how the low level semantics of a .NET Core application work. Most high level features like ASP.NET MVC, SignalR, gRPC are built ontop of a core middleware pipeline and that's what we start with here. And don't you worry - we'll get into creating full blown projects in Visual Studio soon enough, but for now lets learn about the Core of Core.
+Time to get our feet wet! In this section I'll take you through creating an ASP.NET Core application from scratch - literally. I'll use the basic command line tooling and a text editor (Visual Studio Code) rather than the full blown Visual Studio. I'm not doing this because I love the command line or I think we should only use low level tools. It's because for understanding the underpinnings of .NET Core it can be really helpful to see how the tooling works and how the low level semantics of a .NET Core application work. Most high level features like ASP.NET MVC, SignalR, gRPC are built on top of a core middleware pipeline and that's what we start with here. And don't you worry - we'll get into creating full blown projects in Visual Studio soon enough, but for now lets learn about the Core of Core.
 
 ## .NET Command Line Tooling
 One of the cool features of .NET Core is that all the tools to build, run, package and publish applications are accessible via command line tools that are straight forward to use. Let's use these tools to create a new project, build it and run it all from the command line.
@@ -644,7 +646,7 @@ These endpoint routes are much more light weight than full blown MVC as they dir
 
 There are a few good use cases for light weight Endpoint Routes:
 
-* **Microservices**  
+* **Micro Services**  
 Because Endpoint routes are low level, they are very efficient and require very no setup which makes them ideal for micro services that handle single (or even a few) very focused operations as standalone applications.
 
 * **Distributed components**  
@@ -659,7 +661,7 @@ At this point I've shown you a number of different approaches of how you can han
 Additionally these low level constructs really describe part of the base architecture of ASP.NET Core and understanding these basics is helpful for an understanding of the platform as a whole.
 
 ## Take a Step up: Adding ASP.NET MVC
-So now it's time to take a step up and look at a higher level framework: ASP.NET Core MVC. MVC stands for **Model View Controller** and ASP.NET Core provides both a traditonal MVC framework as well as API services and Razor Pages under the banner for the ASP.NET Core MVC. The reason for this convergence is that although the technologies at the surface are different, they have a common underlying processing base that is shared between these specific frameworks.
+So now it's time to take a step up and look at a higher level framework: ASP.NET Core MVC. MVC stands for **Model View Controller** and ASP.NET Core provides both a traditional MVC framework as well as API services and Razor Pages under the banner for the ASP.NET Core MVC. The reason for this convergence is that although the technologies at the surface are different, they have a common underlying processing base that is shared between these specific frameworks.
 
 ### A Quick Review of MVC
 The **M** in MVC stands for **Model** and it represents the data that is being passed into and out of a **Controller** - which is the **C** in MVC. The Controller is the center piece of MVC, that sits between the model and the **View** which is the **V** in MVC, which provides the final display or data output for a request. The controller ties the model and the view together via code. Most if not all of the code related to a request is contained in the controller logic. In ASP.NET Core controllers are classes that have 'actions' or methods that provide the core logic for individual requests.

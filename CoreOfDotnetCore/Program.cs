@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Newtonsoft.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Westwind.AspNetCore.LiveReload;
+
 
 namespace CoreOfDotnetCore
 {
@@ -41,22 +38,11 @@ namespace CoreOfDotnetCore
 
             var provider =services.BuildServiceProvider();
             var env = provider.GetService<IWebHostEnvironment>();
-
-            services.AddLiveReload(config =>
-            {
-                config.LiveReloadEnabled = false;
-            });
-
-
+            
             if (env.IsDevelopment()) { 
                 services.AddMvc()
-                      // .AddNewtonsoftJson( o=> o.SerializerSettings)
-                      .AddMvcOptions(o =>
-                      {
-                          
-                      })
-                     
-                      .AddRazorRuntimeCompilation();
+                    .AddNewtonsoftJson()
+                    .AddRazorRuntimeCompilation();
 
             }
             else
@@ -163,7 +149,7 @@ namespace CoreOfDotnetCore
                 Name = "Rick",
                 Message = "Getting Started Is Never Easy To Do.",
             };
-            return View(model);
+            return Json(model);
         }
 
         //public ActionResult Index()
